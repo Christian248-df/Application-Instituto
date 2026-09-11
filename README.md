@@ -325,6 +325,6 @@ Las funcionalidades que dependen de almacenamiento persistente, registro real de
 
 ##  Autor
 
-**Christian Domingo Flores**
+**Roberto Lagunas Cazales**
 
 Proyecto académico — Aplicación móvil para el control de asistencia de un congreso educativo.
