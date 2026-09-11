@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/widgets/app_alert.dart';
 import 'participants_page.dart';
 import 'admin_profile_page.dart';
+import 'attendance_report_page.dart';
+import 'sessions_page.dart';
 
 class AdminHomePage extends StatefulWidget {
   const AdminHomePage({super.key});
@@ -25,7 +27,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   static const Color borderColor = Color(0xFFE5E7EB);
 
   // ================================================================
-  // ALERTA DE MÓDULOS NO DISPONIBLES
+  // ALERTAS
   // ================================================================
 
   void _showComingSoon(String title, String message) {
@@ -42,10 +44,6 @@ class _AdminHomePageState extends State<AdminHomePage> {
   // ================================================================
 
   void _onNavigationTap(int index) {
-    // --------------------------------------------------------------
-    // INICIO
-    // --------------------------------------------------------------
-
     if (index == 0) {
       setState(() {
         _selectedIndex = 0;
@@ -53,50 +51,40 @@ class _AdminHomePageState extends State<AdminHomePage> {
       return;
     }
 
-    // --------------------------------------------------------------
-    // SESIONES
-    // --------------------------------------------------------------
-
     if (index == 1) {
       setState(() {
         _selectedIndex = 1;
       });
 
-      _showComingSoon(
-        'Sesiones',
-        'El módulo de gestión de sesiones estará disponible próximamente.',
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const SessionsPage()),
       );
 
       return;
     }
-
-    // --------------------------------------------------------------
-    // ASISTENCIA
-    // --------------------------------------------------------------
 
     if (index == 2) {
       setState(() {
         _selectedIndex = 2;
       });
 
-      _showComingSoon(
-        'Asistencia',
-        'El módulo de registro y consulta de asistencia estará disponible próximamente.',
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AttendanceReportPage()),
       );
 
       return;
     }
 
-    // --------------------------------------------------------------
-    // PERFIL
-    // --------------------------------------------------------------
-
     if (index == 3) {
+      setState(() {
+        _selectedIndex = 3;
+      });
+
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => const AdminProfilePage(),
-        ),
+        MaterialPageRoute(builder: (context) => const AdminProfilePage()),
       );
 
       return;
@@ -120,12 +108,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(
-                  24,
-                  20,
-                  24,
-                  30,
-                ),
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -174,20 +157,10 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
   Widget _buildTopBar() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(
-        24,
-        18,
-        24,
-        18,
-      ),
+      padding: const EdgeInsets.fromLTRB(24, 18, 24, 18),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: borderColor,
-            width: 1,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: borderColor, width: 1)),
       ),
       child: Row(
         children: [
@@ -225,10 +198,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 SizedBox(height: 3),
                 Text(
                   'Panel de administración',
-                  style: TextStyle(
-                    color: secondaryText,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: secondaryText, fontSize: 12),
                 ),
               ],
             ),
@@ -241,9 +211,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
             decoration: BoxDecoration(
               color: backgroundColor,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: borderColor,
-              ),
+              border: Border.all(color: borderColor),
             ),
             child: IconButton(
               onPressed: () {
@@ -278,9 +246,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
               decoration: BoxDecoration(
                 color: const Color(0xFFEFF6FF),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFFDBEAFE),
-                ),
+                border: Border.all(color: const Color(0xFFDBEAFE)),
               ),
               child: const Icon(
                 Icons.person_outline_rounded,
@@ -386,10 +352,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
         Text(
           subtitle,
-          style: const TextStyle(
-            color: secondaryText,
-            fontSize: 13,
-          ),
+          style: const TextStyle(color: secondaryText, fontSize: 13),
         ),
       ],
     );
@@ -455,9 +418,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(17),
-        border: Border.all(
-          color: borderColor,
-        ),
+        border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.035),
@@ -478,11 +439,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                   color: iconColor.withOpacity(0.09),
                   borderRadius: BorderRadius.circular(11),
                 ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: 21,
-                ),
+                child: Icon(icon, color: iconColor, size: 21),
               ),
 
               const Spacer(),
@@ -513,10 +470,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
           Text(
             subtitle,
-            style: const TextStyle(
-              color: secondaryText,
-              fontSize: 11,
-            ),
+            style: const TextStyle(color: secondaryText, fontSize: 11),
           ),
         ],
       ),
@@ -530,17 +484,74 @@ class _AdminHomePageState extends State<AdminHomePage> {
   Widget _buildActions() {
     return Column(
       children: [
+        // ============================================================
+        // PARTICIPANTES
+        // ============================================================
+
         _buildActionCard(
           icon: Icons.people_alt_outlined,
           title: 'Gestionar participantes',
-          description:
-              'Registrar, consultar y administrar participantes.',
+          description: 'Registrar, consultar y administrar participantes.',
           iconColor: primaryBlue,
           onTap: () {
             Navigator.push(
               context,
+              MaterialPageRoute(builder: (context) => const ParticipantsPage()),
+            );
+          },
+        ),
+
+        const SizedBox(height: 12),
+
+        // ============================================================
+        // SESIONES
+        // ============================================================
+        _buildActionCard(
+          icon: Icons.event_note_outlined,
+          title: 'Gestionar sesiones',
+          description: 'Crear y administrar las sesiones del congreso.',
+          iconColor: const Color(0xFF7C3AED),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SessionsPage()),
+            );
+          },
+        ),
+
+        const SizedBox(height: 12),
+
+        // ============================================================
+        // REGISTRAR ASISTENCIA
+        // ============================================================
+        _buildActionCard(
+          icon: Icons.qr_code_scanner_rounded,
+          title: 'Registrar asistencia',
+          description: 'Registrar la entrada mediante QR o identificador.',
+          iconColor: const Color(0xFF059669),
+          onTap: () {
+            _showComingSoon(
+              'Registrar asistencia',
+              'El módulo de registro de asistencia estará disponible próximamente.',
+            );
+          },
+        ),
+
+        const SizedBox(height: 12),
+
+        // ============================================================
+        // CONSULTAR ASISTENCIA
+        // ============================================================
+        _buildActionCard(
+          icon: Icons.search_rounded,
+          title: 'Consultar asistencia',
+          description: 'Consultar participantes y estados de asistencia.',
+          iconColor: const Color(0xFFD97706),
+          onTap: () {
+            Navigator.push(
+              context,
               MaterialPageRoute(
-                builder: (context) => const ParticipantsPage(),
+                builder: (context) => const AttendanceReportPage(),
               ),
             );
           },
@@ -548,64 +559,20 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
         const SizedBox(height: 12),
 
-        _buildActionCard(
-          icon: Icons.event_note_outlined,
-          title: 'Gestionar sesiones',
-          description:
-              'Crear y administrar las sesiones del congreso.',
-          iconColor: const Color(0xFF7C3AED),
-          onTap: () {
-            _showComingSoon(
-              'Sesiones',
-              'El módulo de sesiones estará disponible próximamente.',
-            );
-          },
-        ),
-
-        const SizedBox(height: 12),
-
-        _buildActionCard(
-          icon: Icons.qr_code_scanner_rounded,
-          title: 'Registrar asistencia',
-          description:
-              'Registrar la entrada mediante QR o identificador.',
-          iconColor: const Color(0xFF059669),
-          onTap: () {
-            _showComingSoon(
-              'Registrar asistencia',
-              'El módulo de asistencia estará disponible próximamente.',
-            );
-          },
-        ),
-
-        const SizedBox(height: 12),
-
-        _buildActionCard(
-          icon: Icons.search_rounded,
-          title: 'Consultar asistencia',
-          description:
-              'Consultar participantes y estados de asistencia.',
-          iconColor: const Color(0xFFD97706),
-          onTap: () {
-            _showComingSoon(
-              'Consultar asistencia',
-              'La consulta de asistencia estará disponible próximamente.',
-            );
-          },
-        ),
-
-        const SizedBox(height: 12),
-
+        // ============================================================
+        // GENERAR REPORTE
+        // ============================================================
         _buildActionCard(
           icon: Icons.picture_as_pdf_outlined,
           title: 'Generar reporte',
-          description:
-              'Crear reportes de participantes y asistencias.',
+          description: 'Crear reportes de participantes y asistencias.',
           iconColor: const Color(0xFFDC2626),
           onTap: () {
-            _showComingSoon(
-              'Generar reporte',
-              'La generación de reportes estará disponible próximamente.',
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AttendanceReportPage(),
+              ),
             );
           },
         ),
@@ -630,9 +597,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
           padding: const EdgeInsets.all(17),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(17),
-            border: Border.all(
-              color: borderColor,
-            ),
+            border: Border.all(color: borderColor),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.025),
@@ -650,11 +615,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                   color: iconColor.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: 24,
-                ),
+                child: Icon(icon, color: iconColor, size: 24),
               ),
 
               const SizedBox(width: 15),
@@ -711,9 +672,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(17),
-        border: Border.all(
-          color: borderColor,
-        ),
+        border: Border.all(color: borderColor),
       ),
       child: Row(
         children: [
@@ -750,20 +709,14 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
                 Text(
                   'El panel administrativo está listo para trabajar.',
-                  style: TextStyle(
-                    color: secondaryText,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: secondaryText, fontSize: 12),
                 ),
               ],
             ),
           ),
 
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 6,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
               color: const Color(0xFFECFDF5),
               borderRadius: BorderRadius.circular(20),
@@ -790,20 +743,12 @@ class _AdminHomePageState extends State<AdminHomePage> {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: borderColor,
-            width: 1,
-          ),
-        ),
+        border: Border(top: BorderSide(color: borderColor, width: 1)),
       ),
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 8,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           child: Row(
             children: [
               _buildNavigationItem(
@@ -852,19 +797,13 @@ class _AdminHomePageState extends State<AdminHomePage> {
         onTap: () => _onNavigationTap(index),
         behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
-          duration: const Duration(
-            milliseconds: 200,
-          ),
-          padding: const EdgeInsets.symmetric(
-            vertical: 6,
-          ),
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 6),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               AnimatedContainer(
-                duration: const Duration(
-                  milliseconds: 200,
-                ),
+                duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 15,
                   vertical: 5,
@@ -877,9 +816,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 ),
                 child: Icon(
                   icon,
-                  color: selected
-                      ? primaryBlue
-                      : const Color(0xFF6B7280),
+                  color: selected ? primaryBlue : const Color(0xFF6B7280),
                   size: 21,
                 ),
               ),
@@ -889,13 +826,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
               Text(
                 label,
                 style: TextStyle(
-                  color: selected
-                      ? primaryBlue
-                      : const Color(0xFF6B7280),
+                  color: selected ? primaryBlue : const Color(0xFF6B7280),
                   fontSize: 10,
-                  fontWeight: selected
-                      ? FontWeight.bold
-                      : FontWeight.w500,
+                  fontWeight: selected ? FontWeight.bold : FontWeight.w500,
                 ),
               ),
             ],
