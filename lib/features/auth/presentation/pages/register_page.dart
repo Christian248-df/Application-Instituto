@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_crud_app/features/auth/presentation/pages/login_page.dart';
 
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/database/database_helper.dart';
 import '../../../../core/widgets/app_alert.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -16,17 +16,15 @@ class _RegisterPageState extends State<RegisterPage>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _institutionController = TextEditingController();
-  final TextEditingController _matriculaController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
+  final TextEditingController _nombreController = TextEditingController();
+  final TextEditingController _correoController = TextEditingController();
+  final TextEditingController _institucionController = TextEditingController();
+  final TextEditingController _identificadorController =
       TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-  bool _isLoading = false;
   bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -59,38 +57,65 @@ class _RegisterPageState extends State<RegisterPage>
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _institutionController.dispose();
-    _matriculaController.dispose();
+    _nombreController.dispose();
+    _correoController.dispose();
+    _institucionController.dispose();
+    _identificadorController.dispose();
     _passwordController.dispose();
-    _confirmPasswordController.dispose();
-
     _animationController.dispose();
-
     super.dispose();
   }
 
-  void _register() {
+  void _register() async {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+      setState(() => _isLoading = true);
 
-      Future.delayed(const Duration(seconds: 2), () {
+      try {
+        final datosRegistro = {
+          'nombre_completo': _nombreController.text.trim(),
+          'correo': _correoController.text.trim(),
+          'institucion': _institucionController.text.trim(),
+          'identificador': _identificadorController.text.trim(),
+        };
+
+        await DatabaseHelper.instance.registrarParticipante(
+          datosRegistro,
+          _passwordController.text.trim(),
+        );
+
         if (!mounted) return;
+        AppAlert.show(
+          context,
+          title: '¡Registro Exitoso!',
+          message: 'Tu cuenta ha sido creada. Ahora puedes iniciar sesión.',
+          type: AppAlertType.success,
+        );
 
-        setState(() {
-          _isLoading = false;
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) Navigator.pop(context);
         });
+      } catch (e) {
+        if (!mounted) return;
+        String error = e.toString().toLowerCase();
 
-AppAlert.show(
-  context,
-  title: 'Registro exitoso',
-  message: 'Tu cuenta fue creada correctamente.',
-  type: AppAlertType.success,
-);
-      });
+        if (error.contains('unique constraint failed')) {
+          AppAlert.show(
+            context,
+            title: 'Datos Duplicados',
+            message: 'El correo electrónico o el identificador ya están registrados.',
+            type: AppAlertType.warning,
+          );
+        } else {
+          AppAlert.show(
+            context,
+            title: 'Error',
+            message: 'Ocurrió un problema: $e',
+            type: AppAlertType.error,
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -100,25 +125,21 @@ AppAlert.show(
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Fondo
-          Image.asset('assets/images/conference_bg.png', fit: BoxFit.cover),
-
-          // Capa oscura
+          Image.asset('assets/images/conference.jpeg', fit: BoxFit.cover),
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withOpacity(0.35),
-                  Colors.black.withOpacity(0.60),
-                  Colors.black.withOpacity(0.88),
+                  Colors.black.withOpacity(0.40),
+                  Colors.black.withOpacity(0.70),
+                  Colors.black.withOpacity(0.95),
                 ],
               ),
             ),
           ),
 
-          // Contenido
           SafeArea(
             child: SingleChildScrollView(
               child: Padding(
@@ -132,13 +153,11 @@ AppAlert.show(
                     position: _slideAnimation,
                     child: Column(
                       children: [
-                        // Botón regresar
+                        // BOTÓN REGRESAR
                         Align(
                           alignment: Alignment.centerLeft,
                           child: IconButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
+                            onPressed: () => Navigator.pop(context),
                             icon: const Icon(
                               Icons.arrow_back_rounded,
                               color: Colors.white,
@@ -147,30 +166,11 @@ AppAlert.show(
                           ),
                         ),
 
-                        const SizedBox(height: 15),
+                        const SizedBox(height: 10),
 
-                        // Icono
-                        Container(
-                          width: 72,
-                          height: 72,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.25),
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.music_note_rounded,
-                            color: Colors.white,
-                            size: 40,
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
+                        // TÍTULO
                         const Text(
-                          'Registro de nuevo alumno',
+                          'Crear Cuenta',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,
@@ -178,13 +178,11 @@ AppAlert.show(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         const SizedBox(height: 8),
-
                         const Text(
-                          'Regístrate para acceder al instituto de música',
+                          'Regístrate para acceder al congreso',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.white, fontSize: 15),
+                          style: TextStyle(color: Colors.white70, fontSize: 15),
                         ),
 
                         const SizedBox(height: 30),
@@ -194,115 +192,66 @@ AppAlert.show(
                           key: _formKey,
                           child: Column(
                             children: [
-                              // Nombre completo
+                              // 1. Nombre Completo
                               AppTextField(
-                                controller: _nameController,
+                                controller: _nombreController,
                                 label: 'Nombre completo',
-                                hint: 'Ej. Carlos Peralta Trujillo',
-                                icon: Icons.person_outline,
-                                keyboardType: TextInputType.name,
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return 'Ingresa tu nombre completo';
-                                  }
-
-                                  final name = value.trim();
-
-                                  if (RegExp(r'^\d+$').hasMatch(name)) {
-                                    return 'El nombre no puede contener solo números';
-                                  }
-
-                                  final nameRegex = RegExp(
-                                    r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$",
-                                  );
-
-                                  if (!nameRegex.hasMatch(name)) {
-                                    return 'El nombre solo puede contener letras';
-                                  }
-
-                                  return null;
-                                },
+                                hint: 'Ej. Juan Pérez',
+                                icon: Icons.person_outline_rounded,
+                                validator: (value) =>
+                                    value == null || value.trim().isEmpty
+                                    ? 'Ingresa tu nombre'
+                                    : null,
                               ),
+                              const SizedBox(height: 16),
 
-                              const SizedBox(height: 20),
-
-                              // Correo
+                              // 2. Correo Electrónico
                               AppTextField(
-                                controller: _emailController,
+                                controller: _correoController,
                                 label: 'Correo electrónico',
                                 hint: 'correo@ejemplo.com',
                                 icon: Icons.email_outlined,
                                 keyboardType: TextInputType.emailAddress,
                                 validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
+                                  if (value == null || value.trim().isEmpty)
                                     return 'Ingresa tu correo';
-                                  }
-
-                                  final email = value.trim();
-
                                   final emailRegex = RegExp(
                                     r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
                                   );
-
-                                  if (!emailRegex.hasMatch(email)) {
+                                  if (!emailRegex.hasMatch(value.trim()))
                                     return 'Ingresa un correo válido';
-                                  }
-
                                   return null;
                                 },
                               ),
+                              const SizedBox(height: 16),
 
-                              const SizedBox(height: 20),
-
-                              // Institución
+                              // 3. Institución
                               AppTextField(
-                                controller: _institutionController,
-                                label: 'Ingrese el instituto',
-                                hint: 'Universidad Tecnológica...',
+                                controller: _institucionController,
+                                label: 'Institución de procedencia',
+                                hint: 'Ej. UAEM',
                                 icon: Icons.school_outlined,
-                                keyboardType: TextInputType.text,
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return 'Ingresa una institución';
-                                  }
-
-                                  final institution = value.trim();
-
-                                  if (RegExp(r'^\d+$').hasMatch(institution)) {
-                                    return 'La institución no puede contener solo números';
-                                  }
-
-                                  return null;
-                                },
+                                validator: (value) =>
+                                    value == null || value.trim().isEmpty
+                                    ? 'Ingresa tu institución'
+                                    : null,
                               ),
+                              const SizedBox(height: 16),
 
-                              const SizedBox(height: 20),
-
-                              // Matrícula
+                              // 4. Identificador / Matrícula
                               AppTextField(
-                                controller: _matriculaController,
-                                label: 'Ingresa tu matrícula',
-                                hint: '20652MS089',
+                                controller: _identificadorController,
+                                label: 'Identificador o Matrícula',
+                                hint: 'Ej. 2023X001',
                                 icon: Icons.badge_outlined,
-                                keyboardType: TextInputType.text,
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return 'Ingresa tu matrícula';
-                                  }
-
-                                  final matricula = value.trim();
-
-                                  if (matricula.length < 5) {
-                                    return 'La matrícula es demasiado corta';
-                                  }
-
-                                  return null;
-                                },
+                                validator: (value) =>
+                                    value == null || value.trim().isEmpty
+                                    ? 'Ingresa tu identificador'
+                                    : null,
                               ),
+                              const SizedBox(height: 16),
 
-                              const SizedBox(height: 20),
-
-                              // Contraseña
+                              // 5. Contraseña
                               AppTextField(
                                 controller: _passwordController,
                                 label: 'Contraseña',
@@ -310,11 +259,9 @@ AppAlert.show(
                                 icon: Icons.lock_outline_rounded,
                                 obscureText: _obscurePassword,
                                 suffixIcon: IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
+                                  onPressed: () => setState(
+                                    () => _obscurePassword = !_obscurePassword,
+                                  ),
                                   icon: Icon(
                                     _obscurePassword
                                         ? Icons.visibility_outlined
@@ -323,106 +270,28 @@ AppAlert.show(
                                   ),
                                 ),
                                 validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Ingresa tu contraseña';
-                                  }
-
-                                  if (value.length < 6) {
+                                  if (value == null || value.isEmpty)
+                                    return 'Ingresa una contraseña';
+                                  if (value.length < 6)
                                     return 'Mínimo 6 caracteres';
-                                  }
-
                                   return null;
                                 },
                               ),
+                              const SizedBox(height: 35),
 
-                              const SizedBox(height: 20),
-
-                              // Confirmar contraseña
-                              AppTextField(
-                                controller: _confirmPasswordController,
-                                label: 'Confirmar contraseña',
-                                hint: '••••••••',
-                                icon: Icons.lock_outline_rounded,
-                                obscureText: _obscureConfirmPassword,
-                                suffixIcon: IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscureConfirmPassword =
-                                          !_obscureConfirmPassword;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    _obscureConfirmPassword
-                                        ? Icons.visibility_outlined
-                                        : Icons.visibility_off_outlined,
-                                    color: Colors.white70,
-                                  ),
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Confirma tu contraseña';
-                                  }
-
-                                  if (value.length < 6) {
-                                    return 'Mínimo 6 caracteres';
-                                  }
-
-                                  if (value != _passwordController.text) {
-                                    return 'Las contraseñas no coinciden';
-                                  }
-
-                                  return null;
-                                },
-                              ),
-
-                              const SizedBox(height: 25),
-
-                              // Botón registrar
-                              AppButton(
-                                text: 'Crear cuenta',
-                                icon: Icons.person_add_alt_1,
-                                loading: _isLoading,
-                                onPressed: _register,
-                              ),
-
-                              const SizedBox(height: 10),
-
-                              // Ir a Login
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Text(
-                                    '¿Ya tienes una cuenta?',
-                                    style: TextStyle(color: Colors.white70),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const LoginPage(),
-                                        ),
-                                      );
-                                    },
-                                    child: const Text(
-                                      'Iniciar sesión',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                              // BOTÓN DE REGISTRO
+                              _isLoading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.blueAccent,
+                                    )
+                                  : AppButton(
+                                      text: 'Registrar participante',
+                                      onPressed: _register,
                                     ),
-                                  ),
-                                ],
-                              ),
                             ],
                           ),
                         ),
-                        /**FOOTER */
-                        const Text(
-                          'Congreso Educativo • 2026',
-                          style: TextStyle(color: Colors.white54, fontSize: 12),
-                        ),
+                        const SizedBox(height: 30),
                       ],
                     ),
                   ),

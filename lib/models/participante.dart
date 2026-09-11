@@ -4,7 +4,7 @@ class Participante {
   final String correo;
   final String institucion;
   final String identificador;
-  final String passwordHash; // ¡Nuevo campo para la contraseña!
+  final String passwordHash;
 
   Participante({
     this.id,

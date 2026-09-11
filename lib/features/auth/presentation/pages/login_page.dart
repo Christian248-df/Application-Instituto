@@ -6,6 +6,8 @@ import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/database/database_helper.dart';
 import '../../../home/presentation/pages/home_page.dart';
 
+import 'register_page.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -322,7 +324,13 @@ class _LoginPageState extends State<LoginPage>
                                   ),
                                   TextButton(
                                     onPressed: () {
-                                      // Aquí Christian deberá colocar la navegación al register_page.dart
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const RegisterPage(),
+                                        ),
+                                      );
                                     },
                                     child: const Text(
                                       'Registrarse',
