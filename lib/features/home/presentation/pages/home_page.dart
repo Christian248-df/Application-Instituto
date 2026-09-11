@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/database/database_helper.dart';
-import '../../../../core/widgets/app_alert.dart'; // ¡La nueva alerta de Christian!
+import '../../../../core/widgets/app_alert.dart';
 
 class HomePage extends StatefulWidget {
   final String rol;
@@ -50,7 +50,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // --- NUEVA FUNCIÓN USANDO LA ALERTA DE CHRIS ---
   void _mostrarAlerta(String titulo, String mensaje, AppAlertType tipo) {
     AppAlert.show(context, title: titulo, message: mensaje, type: tipo);
   }
@@ -404,7 +403,7 @@ class _HomePageState extends State<HomePage> {
 }
 
 // ======================================================================
-// VISTA DE REGISTRO DE ASISTENCIA CON LAS ALERTAS DE CHRIS
+// VISTA DE REGISTRO DE ASISTENCIA
 // ======================================================================
 class _VistaAsistencia extends StatefulWidget {
   final String rol;
