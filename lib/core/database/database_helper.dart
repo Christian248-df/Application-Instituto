@@ -445,8 +445,6 @@ class DatabaseHelper {
     final file = File(path);
     await file.writeAsString(csvContent);
 
-    // Devuelve la ruta absoluta para que el frontend (Christian) pueda mostrar
-    // un mensaje de éxito como: "Guardado en: $ruta"
     return path;
   }
 
