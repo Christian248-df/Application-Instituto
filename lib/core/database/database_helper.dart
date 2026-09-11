@@ -23,7 +23,7 @@ class DatabaseHelper {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('congreso_avanzado.db');
+    _database = await _initDB('congreso_final_v5.db');
     return _database!;
   }
 
@@ -62,7 +62,8 @@ class DatabaseHelper {
         nombre_completo $textType,
         correo $textType,
         institucion $textType,
-        identificador $textType UNIQUE
+        identificador $textType UNIQUE,
+        password_hash $textType
       )
     ''');
 
@@ -99,11 +100,71 @@ class DatabaseHelper {
       )
     ''');
 
+    // 1. Nace el Administrador
     await db.insert('usuarios', {
       'username': 'admin',
       'password_hash':
           '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918',
       'rol': 'administrador',
+    });
+
+    // 2. Nace Juan (Alumno UAEM)
+    await db.insert('participantes', {
+      'nombre_completo': 'Juan Pérez',
+      'correo': 'juan@uaem.edu.mx',
+      'institucion': 'UAEM',
+      'identificador': '2023X001',
+      'password_hash':
+          'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f',
+    });
+
+    // 3. Nacen las Clases
+    int idElectronica = await db.insert('clases', {
+      'nombre': 'Taller de Electrónica',
+      'descripcion': 'Fundamentos de circuitos, soldadura de componentes y programación de placas.',
+    });
+
+    int idFotografia = await db.insert('clases', {
+      'nombre': 'Taller de Fotografía',
+      'descripcion':
+          'Técnicas de captura, iluminación y procesamiento de video.',
+    });
+
+    int idDibujo = await db.insert('clases', {
+      'nombre': 'Dibujo Técnico',
+      'descripcion': 'Creación de planos, esquemas estructurados y topologías.',
+    });
+
+    int idPintura = await db.insert('clases', {
+      'nombre': 'Pintura al Óleo',
+      'descripcion':
+          'Técnicas clásicas de pintura, teoría del color y texturas.',
+    });
+
+    // 4. Nacen las Sesiones
+    await db.insert('sesiones', {
+      'id_clase': idElectronica,
+      'fecha': '2026-09-15',
+      'hora': '10:00',
+      'lugar': 'Lab Hardware',
+    });
+    await db.insert('sesiones', {
+      'id_clase': idFotografia,
+      'fecha': '2026-09-15',
+      'hora': '12:00',
+      'lugar': 'Estudio B',
+    });
+    await db.insert('sesiones', {
+      'id_clase': idDibujo,
+      'fecha': '2026-09-16',
+      'hora': '11:00',
+      'lugar': 'Sala Diseño',
+    });
+    await db.insert('sesiones', {
+      'id_clase': idPintura,
+      'fecha': '2026-09-16',
+      'hora': '14:00',
+      'lugar': 'Sala Pintura',
     });
   }
 
@@ -132,12 +193,49 @@ class DatabaseHelper {
     return null;
   }
 
+  // Login para alumnos (Usa correo y contraseña plana)
+  Future<Participante?> loginParticipante(
+    String correo,
+    String passwordPlana,
+  ) async {
+    final db = await instance.database;
+    final hash = _generarHash(
+      passwordPlana,
+    ); // Reutilizamos tu función de seguridad
+
+    final res = await db.query(
+      'participantes',
+      where: 'correo = ? AND password_hash = ?',
+      whereArgs: [correo, hash],
+    );
+
+    if (res.isNotEmpty) {
+      return Participante.fromMap(res.first);
+    }
+    return null;
+  }
+
   // ==========================================
   // MÓDULO DE PARTICIPANTES
   // ==========================================
 
-  Future<int> registrarParticipante(Participante participante) async {
+  Future<int> registrarParticipante(
+    Map<String, dynamic> datosRegistro,
+    String passwordPlana,
+  ) async {
     final db = await instance.database;
+
+    // Generamos el hash antes de guardarlo
+    final hash = _generarHash(passwordPlana);
+
+    final participante = Participante(
+      nombreCompleto: datosRegistro['nombre_completo'],
+      correo: datosRegistro['correo'],
+      institucion: datosRegistro['institucion'],
+      identificador: datosRegistro['identificador'],
+      passwordHash: hash,
+    );
+
     return await db.insert(
       'participantes',
       participante.toMap(),
@@ -184,7 +282,7 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> obtenerAgendaCompleta() async {
     final db = await instance.database;
     return await db.rawQuery('''
-      SELECT s.id as id_sesion, c.nombre as clase, s.fecha, s.hora, s.lugar
+      SELECT s.id as id_sesion, c.nombre as clase, c.descripcion, s.fecha, s.hora, s.lugar
       FROM sesiones s
       JOIN clases c ON s.id_clase = c.id
       ORDER BY s.fecha ASC, s.hora ASC

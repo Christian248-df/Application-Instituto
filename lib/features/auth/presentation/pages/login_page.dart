@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 
+import '../../../../core/database/database_helper.dart';
+import '../../../home/presentation/pages/home_page.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -14,11 +17,8 @@ class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _emailController =
-      TextEditingController();
-
-  final TextEditingController _passwordController =
-      TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
 
@@ -40,15 +40,13 @@ class _LoginPageState extends State<LoginPage>
       curve: Curves.easeOut,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeOutCubic,
-      ),
-    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
     _animationController.forward();
   }
@@ -61,11 +59,61 @@ class _LoginPageState extends State<LoginPage>
     super.dispose();
   }
 
-  void _login() {
+  void _login() async {
     if (_formKey.currentState!.validate()) {
+      final user = _emailController.text.trim();
+      final pass = _passwordController.text.trim();
+
+      // 1. Intentar login como Administrador
+      final admin = await DatabaseHelper.instance.login(user, pass);
+      if (admin != null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Bienvenido Administrador'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomePage(rol: 'admin')),
+        );
+        return;
+      }
+
+      // 2. Intentar login como Participante (Alumno)
+      final participante = await DatabaseHelper.instance.loginParticipante(
+        user,
+        pass,
+      );
+      if (participante != null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Hola, ${participante.nombreCompleto}'),
+            backgroundColor: Colors.blue,
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => HomePage(
+              rol: 'participante',
+              idParticipante: participante.id,
+              nombreParticipante: participante.nombreCompleto,
+              identificador: participante.identificador,
+            ),
+          ),
+        );
+        return;
+      }
+
+      // 3. Si ambos fallan
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Formulario válido'),
+          content: Text('Credenciales incorrectas'),
+          backgroundColor: Colors.redAccent,
         ),
       );
     }
@@ -77,10 +125,7 @@ class _LoginPageState extends State<LoginPage>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(
-            'assets/images/conference_bg.png',
-            fit: BoxFit.cover,
-          ),
+          Image.asset('assets/images/conference.jpeg', fit: BoxFit.cover),
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -170,10 +215,7 @@ class _LoginPageState extends State<LoginPage>
                         const Text(
                           'Inicia sesión para continuar',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 15,
-                          ),
+                          style: TextStyle(color: Colors.white70, fontSize: 15),
                         ),
 
                         const SizedBox(height: 30),
@@ -186,31 +228,19 @@ class _LoginPageState extends State<LoginPage>
                           child: Column(
                             children: [
                               // =================================================
-                              // CORREO
+                              // CORREO / USUARIO
                               // =================================================
                               AppTextField(
                                 controller: _emailController,
-                                label: 'Correo electrónico',
+                                label: 'Correo electrónico o Usuario',
                                 hint: 'correo@ejemplo.com',
                                 icon: Icons.email_outlined,
-                                keyboardType:
-                                    TextInputType.emailAddress,
+                                keyboardType: TextInputType.emailAddress,
                                 validator: (value) {
-                                  if (value == null ||
-                                      value.trim().isEmpty) {
-                                    return 'Ingresa tu correo';
+                                  // Se quitó el Regex estricto para permitir la palabra "admin"
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Ingresa tu usuario o correo';
                                   }
-
-                                  final email = value.trim();
-
-                                  final emailRegex = RegExp(
-                                    r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-                                  );
-
-                                  if (!emailRegex.hasMatch(email)) {
-                                    return 'Ingresa un correo válido';
-                                  }
-
                                   return null;
                                 },
                               ),
@@ -229,8 +259,7 @@ class _LoginPageState extends State<LoginPage>
                                 suffixIcon: IconButton(
                                   onPressed: () {
                                     setState(() {
-                                      _obscurePassword =
-                                          !_obscurePassword;
+                                      _obscurePassword = !_obscurePassword;
                                     });
                                   },
                                   icon: Icon(
@@ -241,15 +270,10 @@ class _LoginPageState extends State<LoginPage>
                                   ),
                                 ),
                                 validator: (value) {
-                                  if (value == null ||
-                                      value.isEmpty) {
+                                  // Se quitó el mínimo de 6 caracteres para permitir "admin"
+                                  if (value == null || value.isEmpty) {
                                     return 'Ingresa tu contraseña';
                                   }
-
-                                  if (value.length < 6) {
-                                    return 'Mínimo 6 caracteres';
-                                  }
-
                                   return null;
                                 },
                               ),
@@ -290,19 +314,15 @@ class _LoginPageState extends State<LoginPage>
                               // REGISTRO
                               // =================================================
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   const Text(
                                     '¿No tienes una cuenta?',
-                                    style: TextStyle(
-                                      color: Colors.white70,
-                                    ),
+                                    style: TextStyle(color: Colors.white70),
                                   ),
                                   TextButton(
                                     onPressed: () {
-                                      // TODO:
-                                      // Navegar a registro
+                                      // Aquí Christian deberá colocar la navegación al register_page.dart
                                     },
                                     child: const Text(
                                       'Registrarse',
@@ -325,10 +345,7 @@ class _LoginPageState extends State<LoginPage>
                         // ====================================================
                         const Text(
                           'Congreso Educativo • 2026',
-                          style: TextStyle(
-                            color: Colors.white54,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: Colors.white54, fontSize: 12),
                         ),
                       ],
                     ),
