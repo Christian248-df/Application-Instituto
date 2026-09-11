@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_text_field.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -11,9 +14,11 @@ class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _emailController =
+      TextEditingController();
 
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _passwordController =
+      TextEditingController();
 
   bool _obscurePassword = true;
 
@@ -35,13 +40,15 @@ class _LoginPageState extends State<LoginPage>
       curve: Curves.easeOut,
     );
 
-    _slideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero).animate(
-          CurvedAnimation(
-            parent: _animationController,
-            curve: Curves.easeOutCubic,
-          ),
-        );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.08),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeOutCubic,
+      ),
+    );
 
     _animationController.forward();
   }
@@ -56,8 +63,11 @@ class _LoginPageState extends State<LoginPage>
 
   void _login() {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Formulario válido')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Formulario válido'),
+        ),
+      );
     }
   }
 
@@ -67,12 +77,10 @@ class _LoginPageState extends State<LoginPage>
       body: Stack(
         fit: StackFit.expand,
         children: [
-
-          Image.asset('assets/images/conference_bg.png', fit: BoxFit.cover),
-
-          // ==========================================
-          // MISMO DEGRADADO DE LA BIENVENIDA
-          // ==========================================
+          Image.asset(
+            'assets/images/conference_bg.png',
+            fit: BoxFit.cover,
+          ),
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -87,9 +95,9 @@ class _LoginPageState extends State<LoginPage>
             ),
           ),
 
-          // ==========================================
+          // ============================================================
           // CONTENIDO
-          // ==========================================
+          // ============================================================
           SafeArea(
             child: SingleChildScrollView(
               child: Padding(
@@ -103,10 +111,9 @@ class _LoginPageState extends State<LoginPage>
                     position: _slideAnimation,
                     child: Column(
                       children: [
-                        // ==================================
-                        // REGRESAR
-                        // ==================================
-
+                        // ==================================================
+                        // BOTÓN REGRESAR
+                        // ==================================================
                         Align(
                           alignment: Alignment.centerLeft,
                           child: IconButton(
@@ -123,9 +130,9 @@ class _LoginPageState extends State<LoginPage>
 
                         const SizedBox(height: 15),
 
-                        // ==================================
+                        // ==================================================
                         // ICONO
-                        // ==================================
+                        // ==================================================
                         Container(
                           width: 72,
                           height: 72,
@@ -145,9 +152,9 @@ class _LoginPageState extends State<LoginPage>
 
                         const SizedBox(height: 20),
 
-                        // ==================================
-                        // TITULO
-                        // ==================================
+                        // ==================================================
+                        // TÍTULO
+                        // ==================================================
                         const Text(
                           'Bienvenido de nuevo',
                           textAlign: TextAlign.center,
@@ -163,78 +170,44 @@ class _LoginPageState extends State<LoginPage>
                         const Text(
                           'Inicia sesión para continuar',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.white70, fontSize: 15),
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 15,
+                          ),
                         ),
 
                         const SizedBox(height: 30),
 
-                        // ==================================
+                        // ==================================================
                         // FORMULARIO
-                        // ==================================
+                        // ==================================================
                         Form(
                           key: _formKey,
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // ------------------------------
+                              // =================================================
                               // CORREO
-                              // ------------------------------
-
-                              const Text(
-                                'Correo electrónico',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-
-                              const SizedBox(height: 8),
-
-                              TextFormField(
+                              // =================================================
+                              AppTextField(
                                 controller: _emailController,
-                                keyboardType: TextInputType.emailAddress,
-                                style: const TextStyle(color: Colors.white),
-                                decoration: InputDecoration(
-                                  hintText: 'correo@ejemplo.com',
-                                  hintStyle: const TextStyle(
-                                    color: Colors.white54,
-                                  ),
-                                  prefixIcon: const Icon(
-                                    Icons.email_outlined,
-                                    color: Colors.white70,
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.white.withOpacity(0.12),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                    borderSide: BorderSide(
-                                      color: Colors.white.withOpacity(0.25),
-                                    ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                    borderSide: BorderSide(
-                                      color: Colors.white.withOpacity(0.25),
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                    borderSide: const BorderSide(
-                                      color: Colors.white,
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  errorStyle: const TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                label: 'Correo electrónico',
+                                hint: 'correo@ejemplo.com',
+                                icon: Icons.email_outlined,
+                                keyboardType:
+                                    TextInputType.emailAddress,
                                 validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
+                                  if (value == null ||
+                                      value.trim().isEmpty) {
                                     return 'Ingresa tu correo';
                                   }
 
-                                  if (!value.contains('@')) {
+                                  final email = value.trim();
+
+                                  final emailRegex = RegExp(
+                                    r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                                  );
+
+                                  if (!emailRegex.hasMatch(email)) {
                                     return 'Ingresa un correo válido';
                                   }
 
@@ -244,73 +217,32 @@ class _LoginPageState extends State<LoginPage>
 
                               const SizedBox(height: 20),
 
-                              // ------------------------------
+                              // =================================================
                               // CONTRASEÑA
-                              // ------------------------------
-                              const Text(
-                                'Contraseña',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-
-                              const SizedBox(height: 8),
-
-                              TextFormField(
+                              // =================================================
+                              AppTextField(
                                 controller: _passwordController,
+                                label: 'Contraseña',
+                                hint: '••••••••',
+                                icon: Icons.lock_outline_rounded,
                                 obscureText: _obscurePassword,
-                                style: const TextStyle(color: Colors.white),
-                                decoration: InputDecoration(
-                                  hintText: '••••••••',
-                                  hintStyle: const TextStyle(
-                                    color: Colors.white54,
-                                  ),
-                                  prefixIcon: const Icon(
-                                    Icons.lock_outline_rounded,
+                                suffixIcon: IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _obscurePassword =
+                                          !_obscurePassword;
+                                    });
+                                  },
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_outlined
+                                        : Icons.visibility_off_outlined,
                                     color: Colors.white70,
-                                  ),
-                                  suffixIcon: IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _obscurePassword = !_obscurePassword;
-                                      });
-                                    },
-                                    icon: Icon(
-                                      _obscurePassword
-                                          ? Icons.visibility_outlined
-                                          : Icons.visibility_off_outlined,
-                                      color: Colors.white70,
-                                    ),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.white.withOpacity(0.12),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                    borderSide: BorderSide(
-                                      color: Colors.white.withOpacity(0.25),
-                                    ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                    borderSide: BorderSide(
-                                      color: Colors.white.withOpacity(0.25),
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                    borderSide: const BorderSide(
-                                      color: Colors.white,
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  errorStyle: const TextStyle(
-                                    color: Colors.white,
                                   ),
                                 ),
                                 validator: (value) {
-                                  if (value == null || value.isEmpty) {
+                                  if (value == null ||
+                                      value.isEmpty) {
                                     return 'Ingresa tu contraseña';
                                   }
 
@@ -322,9 +254,9 @@ class _LoginPageState extends State<LoginPage>
                                 },
                               ),
 
-                              // ------------------------------
+                              // =================================================
                               // RECUPERAR CONTRASEÑA
-                              // ------------------------------
+                              // =================================================
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: TextButton(
@@ -344,45 +276,29 @@ class _LoginPageState extends State<LoginPage>
 
                               const SizedBox(height: 15),
 
-                              // ==================================
-                              // BOTÓN INICIAR SESIÓN
-                              // ==================================
-                              SizedBox(
-                                width: double.infinity,
-                                height: 54,
-                                child: ElevatedButton(
-                                  onPressed: _login,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: Colors.blue.shade800,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Iniciar sesión',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
+                              // =================================================
+                              // BOTÓN LOGIN
+                              // =================================================
+                              AppButton(
+                                text: 'Iniciar sesión',
+                                onPressed: _login,
                               ),
 
                               const SizedBox(height: 18),
 
-                              // ==================================
+                              // =================================================
                               // REGISTRO
-                              // ==================================
+                              // =================================================
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.center,
                                 children: [
                                   const Text(
                                     '¿No tienes una cuenta?',
-                                    style: TextStyle(color: Colors.white70),
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                    ),
                                   ),
-
                                   TextButton(
                                     onPressed: () {
                                       // TODO:
@@ -404,9 +320,15 @@ class _LoginPageState extends State<LoginPage>
 
                         const SizedBox(height: 25),
 
+                        // ====================================================
+                        // FOOTER
+                        // ====================================================
                         const Text(
                           'Congreso Educativo • 2026',
-                          style: TextStyle(color: Colors.white54, fontSize: 12),
+                          style: TextStyle(
+                            color: Colors.white54,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
