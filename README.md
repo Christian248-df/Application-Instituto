@@ -242,7 +242,7 @@ flutter run
 
 ---
 
-##  Generar APK
+## Generar APK
 
 Para generar una versión instalable para Android:
 
@@ -255,6 +255,37 @@ El APK generado se encontrará en:
 ```text
 build/app/outputs/flutter-apk/release/
 ```
+
+---
+
+## Generar aplicación para iOS
+
+Para generar una versión de la aplicación para iOS:
+
+```bash
+flutter build ios --release
+```
+
+La aplicación generada se encontrará en:
+
+```text
+build/ios/iphoneos/Runner.app
+```
+
+Para generar el archivo `.ipa` para distribución:
+
+```bash
+flutter build ipa --release
+```
+
+El archivo `.ipa` generado se encontrará en:
+
+```text
+build/ios/ipa/
+```
+
+> **Nota:** La compilación y distribución de aplicaciones para iOS requiere macOS y Xcode.
+
 
 ---
 
