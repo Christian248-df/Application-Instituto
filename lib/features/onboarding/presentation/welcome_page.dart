@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../features/auth/presentation/pages/login_page.dart';
+import '../../../features/auth/presentation/pages/register_page.dart';
 
 class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
@@ -258,7 +259,10 @@ class _WelcomePageState extends State<WelcomePage>
           height: 52,
           child: OutlinedButton.icon(
             onPressed: () {
-              // TODO: Navegar a Registro
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const RegisterPage()),
+              );
             },
             icon: const Icon(Icons.person_add_alt_1_rounded),
             label: const Text(

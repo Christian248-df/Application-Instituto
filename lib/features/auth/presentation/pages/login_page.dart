@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import './register_page.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 
@@ -18,6 +19,7 @@ class _LoginPageState extends State<LoginPage>
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _emailController = TextEditingController();
+
   final TextEditingController _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
@@ -61,61 +63,8 @@ class _LoginPageState extends State<LoginPage>
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
-      final user = _emailController.text.trim();
-      final pass = _passwordController.text.trim();
-
-      // 1. Intentar login como Administrador
-      final admin = await DatabaseHelper.instance.login(user, pass);
-      if (admin != null) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Bienvenido Administrador'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomePage(rol: 'admin')),
-        );
-        return;
-      }
-
-      // 2. Intentar login como Participante (Alumno)
-      final participante = await DatabaseHelper.instance.loginParticipante(
-        user,
-        pass,
-      );
-      if (participante != null) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Hola, ${participante.nombreCompleto}'),
-            backgroundColor: Colors.blue,
-          ),
-        );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => HomePage(
-              rol: 'participante',
-              idParticipante: participante.id,
-              nombreParticipante: participante.nombreCompleto,
-              identificador: participante.identificador,
-            ),
-          ),
-        );
-        return;
-      }
-
-      // 3. Si ambos fallan
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Credenciales incorrectas'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Formulario válido')));
     }
   }
 
@@ -125,7 +74,7 @@ class _LoginPageState extends State<LoginPage>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset('assets/images/conference.jpeg', fit: BoxFit.cover),
+          Image.asset('assets/images/conference_bg.png', fit: BoxFit.cover),
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -237,9 +186,8 @@ class _LoginPageState extends State<LoginPage>
                                 icon: Icons.email_outlined,
                                 keyboardType: TextInputType.emailAddress,
                                 validator: (value) {
-                                  // Se quitó el Regex estricto para permitir la palabra "admin"
                                   if (value == null || value.trim().isEmpty) {
-                                    return 'Ingresa tu usuario o correo';
+                                    return 'Ingresa tu correo';
                                   }
                                   return null;
                                 },
@@ -270,7 +218,6 @@ class _LoginPageState extends State<LoginPage>
                                   ),
                                 ),
                                 validator: (value) {
-                                  // Se quitó el mínimo de 6 caracteres para permitir "admin"
                                   if (value == null || value.isEmpty) {
                                     return 'Ingresa tu contraseña';
                                   }
@@ -322,7 +269,13 @@ class _LoginPageState extends State<LoginPage>
                                   ),
                                   TextButton(
                                     onPressed: () {
-                                      // Aquí Christian deberá colocar la navegación al register_page.dart
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const RegisterPage(),
+                                        ),
+                                      );
                                     },
                                     child: const Text(
                                       'Registrarse',
