@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../features/auth/presentation/pages/login_page.dart';
+
 class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
 
@@ -227,7 +229,10 @@ class _WelcomePageState extends State<WelcomePage>
           height: 52,
           child: ElevatedButton.icon(
             onPressed: () {
-              // TODO: Navegar a Login
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+              );
             },
             icon: const Icon(Icons.login_rounded),
             label: const Text(
