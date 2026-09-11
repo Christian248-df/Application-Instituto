@@ -4,6 +4,9 @@ import './register_page.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 
+import '../../../../core/database/database_helper.dart';
+import '../../../home/presentation/pages/home_page.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -58,7 +61,7 @@ class _LoginPageState extends State<LoginPage>
     super.dispose();
   }
 
-  void _login() {
+  void _login() async {
     if (_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Formulario válido')));
@@ -174,11 +177,11 @@ class _LoginPageState extends State<LoginPage>
                           child: Column(
                             children: [
                               // =================================================
-                              // CORREO
+                              // CORREO / USUARIO
                               // =================================================
                               AppTextField(
                                 controller: _emailController,
-                                label: 'Correo electrónico',
+                                label: 'Correo electrónico o Usuario',
                                 hint: 'correo@ejemplo.com',
                                 icon: Icons.email_outlined,
                                 keyboardType: TextInputType.emailAddress,
@@ -186,17 +189,6 @@ class _LoginPageState extends State<LoginPage>
                                   if (value == null || value.trim().isEmpty) {
                                     return 'Ingresa tu correo';
                                   }
-
-                                  final email = value.trim();
-
-                                  final emailRegex = RegExp(
-                                    r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-                                  );
-
-                                  if (!emailRegex.hasMatch(email)) {
-                                    return 'Ingresa un correo válido';
-                                  }
-
                                   return null;
                                 },
                               ),
@@ -229,11 +221,6 @@ class _LoginPageState extends State<LoginPage>
                                   if (value == null || value.isEmpty) {
                                     return 'Ingresa tu contraseña';
                                   }
-
-                                  if (value.length < 6) {
-                                    return 'Mínimo 6 caracteres';
-                                  }
-
                                   return null;
                                 },
                               ),

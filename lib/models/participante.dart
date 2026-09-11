@@ -3,7 +3,8 @@ class Participante {
   final String nombreCompleto;
   final String correo;
   final String institucion;
-  final String identificador; // QR o matrícula
+  final String identificador;
+  final String passwordHash; // ¡Nuevo campo para la contraseña!
 
   Participante({
     this.id,
@@ -11,9 +12,9 @@ class Participante {
     required this.correo,
     required this.institucion,
     required this.identificador,
+    required this.passwordHash,
   });
 
-  // Convierte un Objeto a un Map para insertarlo en SQLite
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -21,10 +22,10 @@ class Participante {
       'correo': correo,
       'institucion': institucion,
       'identificador': identificador,
+      'password_hash': passwordHash, // Se guarda en SQLite
     };
   }
 
-  // Convierte un Map de SQLite a un Objeto Dart para el frontend
   factory Participante.fromMap(Map<String, dynamic> map) {
     return Participante(
       id: map['id'],
@@ -32,6 +33,7 @@ class Participante {
       correo: map['correo'],
       institucion: map['institucion'],
       identificador: map['identificador'],
+      passwordHash: map['password_hash'],
     );
   }
 }
