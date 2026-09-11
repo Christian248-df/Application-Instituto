@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import './register_page.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 
@@ -14,11 +15,9 @@ class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _emailController =
-      TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
 
-  final TextEditingController _passwordController =
-      TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
 
@@ -40,15 +39,13 @@ class _LoginPageState extends State<LoginPage>
       curve: Curves.easeOut,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeOutCubic,
-      ),
-    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
     _animationController.forward();
   }
@@ -63,11 +60,8 @@ class _LoginPageState extends State<LoginPage>
 
   void _login() {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Formulario válido'),
-        ),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Formulario válido')));
     }
   }
 
@@ -77,10 +71,7 @@ class _LoginPageState extends State<LoginPage>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(
-            'assets/images/conference_bg.png',
-            fit: BoxFit.cover,
-          ),
+          Image.asset('assets/images/conference_bg.png', fit: BoxFit.cover),
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -170,10 +161,7 @@ class _LoginPageState extends State<LoginPage>
                         const Text(
                           'Inicia sesión para continuar',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 15,
-                          ),
+                          style: TextStyle(color: Colors.white70, fontSize: 15),
                         ),
 
                         const SizedBox(height: 30),
@@ -193,11 +181,9 @@ class _LoginPageState extends State<LoginPage>
                                 label: 'Correo electrónico',
                                 hint: 'correo@ejemplo.com',
                                 icon: Icons.email_outlined,
-                                keyboardType:
-                                    TextInputType.emailAddress,
+                                keyboardType: TextInputType.emailAddress,
                                 validator: (value) {
-                                  if (value == null ||
-                                      value.trim().isEmpty) {
+                                  if (value == null || value.trim().isEmpty) {
                                     return 'Ingresa tu correo';
                                   }
 
@@ -229,8 +215,7 @@ class _LoginPageState extends State<LoginPage>
                                 suffixIcon: IconButton(
                                   onPressed: () {
                                     setState(() {
-                                      _obscurePassword =
-                                          !_obscurePassword;
+                                      _obscurePassword = !_obscurePassword;
                                     });
                                   },
                                   icon: Icon(
@@ -241,8 +226,7 @@ class _LoginPageState extends State<LoginPage>
                                   ),
                                 ),
                                 validator: (value) {
-                                  if (value == null ||
-                                      value.isEmpty) {
+                                  if (value == null || value.isEmpty) {
                                     return 'Ingresa tu contraseña';
                                   }
 
@@ -290,19 +274,21 @@ class _LoginPageState extends State<LoginPage>
                               // REGISTRO
                               // =================================================
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   const Text(
                                     '¿No tienes una cuenta?',
-                                    style: TextStyle(
-                                      color: Colors.white70,
-                                    ),
+                                    style: TextStyle(color: Colors.white70),
                                   ),
                                   TextButton(
                                     onPressed: () {
-                                      // TODO:
-                                      // Navegar a registro
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const RegisterPage(),
+                                        ),
+                                      );
                                     },
                                     child: const Text(
                                       'Registrarse',
@@ -325,10 +311,7 @@ class _LoginPageState extends State<LoginPage>
                         // ====================================================
                         const Text(
                           'Congreso Educativo • 2026',
-                          style: TextStyle(
-                            color: Colors.white54,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: Colors.white54, fontSize: 12),
                         ),
                       ],
                     ),
