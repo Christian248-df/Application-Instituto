@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/database/database_helper.dart';
+import '../../../../core/widgets/app_alert.dart'; // ¡La nueva alerta de Christian!
 
 class HomePage extends StatefulWidget {
-  // === AQUÍ ESTÁ LA SOLUCIÓN A LOS ERRORES ROJOS ===
-  // Ya abrimos la puerta para recibir los datos desde el Login
   final String rol;
   final int? idParticipante;
   final String? nombreParticipante;
@@ -12,7 +11,7 @@ class HomePage extends StatefulWidget {
 
   const HomePage({
     super.key,
-    this.rol = 'admin', // Valor por defecto
+    this.rol = 'admin',
     this.idParticipante,
     this.nombreParticipante,
     this.identificador,
@@ -43,14 +42,17 @@ class _HomePageState extends State<HomePage> {
       _indiceActual = index;
     });
     if (index == 1) {
-      _mostrarMensaje('Navegando a Registro de Asistencia...');
+      _mostrarAlerta(
+        'Navegación',
+        'Estás en el módulo de Registro de Asistencia.',
+        AppAlertType.info,
+      );
     }
   }
 
-  void _mostrarMensaje(String texto) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(texto), behavior: SnackBarBehavior.floating),
-    );
+  // --- NUEVA FUNCIÓN USANDO LA ALERTA DE CHRIS ---
+  void _mostrarAlerta(String titulo, String mensaje, AppAlertType tipo) {
+    AppAlert.show(context, title: titulo, message: mensaje, type: tipo);
   }
 
   // --- MAPEO DE IMÁGENES LOCALES ---
@@ -218,7 +220,6 @@ class _HomePageState extends State<HomePage> {
                   : 'Hola, ${widget.nombreParticipante?.split(" ")[0] ?? "Alumno"}',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
-            // Si es un participante, mostramos su matrícula debajo de su nombre
             if (widget.rol == 'participante')
               Text(
                 'Matrícula: ${widget.identificador}',
@@ -234,7 +235,6 @@ class _HomePageState extends State<HomePage> {
         foregroundColor: Colors.black87,
         elevation: 0,
         actions: [
-          // Avatar de perfil en la esquina superior derecha
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
             child: CircleAvatar(
@@ -260,13 +260,16 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+      // --- CONEXIÓN DE LA VISTA DE ASISTENCIA ---
       body: _indiceActual == 0
           ? _construirListaSesiones()
-          : const Center(child: Text('Pantalla en construcción')),
+          : _VistaAsistencia(
+              rol: widget.rol,
+              identificadorLogueado: widget.identificador,
+            ),
 
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          // Cambié withOpacity por withValues(alpha: X) para quitar los avisos azules de Christian
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
@@ -297,7 +300,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- TARJETAS PREMIUM DE LA LISTA PRINCIPAL ---
   Widget _construirListaSesiones() {
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: _sesiones,
@@ -397,6 +399,213 @@ class _HomePageState extends State<HomePage> {
           },
         );
       },
+    );
+  }
+}
+
+// ======================================================================
+// VISTA DE REGISTRO DE ASISTENCIA CON LAS ALERTAS DE CHRIS
+// ======================================================================
+class _VistaAsistencia extends StatefulWidget {
+  final String rol;
+  final String? identificadorLogueado;
+
+  const _VistaAsistencia({required this.rol, this.identificadorLogueado});
+
+  @override
+  State<_VistaAsistencia> createState() => _VistaAsistenciaState();
+}
+
+class _VistaAsistenciaState extends State<_VistaAsistencia> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _idController = TextEditingController();
+
+  List<Map<String, dynamic>> _sesionesDisponibles = [];
+  int? _idSesionSeleccionada;
+  bool _cargando = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.rol == 'participante' && widget.identificadorLogueado != null) {
+      _idController.text = widget.identificadorLogueado!;
+    }
+    _cargarSesiones();
+  }
+
+  Future<void> _cargarSesiones() async {
+    final data = await DatabaseHelper.instance.obtenerAgendaCompleta();
+    setState(() {
+      _sesionesDisponibles = data;
+    });
+  }
+
+  // --- FUNCIÓN DE ALERTA PERSONALIZADA ---
+  void _mostrarAlerta(String titulo, String mensaje, AppAlertType tipo) {
+    AppAlert.show(context, title: titulo, message: mensaje, type: tipo);
+  }
+
+  Future<void> _registrarAsistencia() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_idSesionSeleccionada == null) {
+      _mostrarAlerta(
+        'Atención',
+        'Por favor, selecciona una sesión de la lista.',
+        AppAlertType.warning,
+      );
+      return;
+    }
+
+    setState(() => _cargando = true);
+
+    try {
+      await DatabaseHelper.instance.registrarAsistenciaQR(
+        _idController.text.trim(),
+        _idSesionSeleccionada!,
+      );
+
+      if (!mounted) return;
+      _mostrarAlerta(
+        '¡Asistencia Confirmada!',
+        'Se ha registrado tu asistencia correctamente.',
+        AppAlertType.success,
+      );
+
+      if (widget.rol == 'admin') {
+        _idController.clear();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      String error = e.toString().toLowerCase();
+
+      if (error.contains('unique constraint failed')) {
+        _mostrarAlerta(
+          'Registro Duplicado',
+          'Esta matrícula ya tiene registrada su asistencia en esta sesión.',
+          AppAlertType.warning,
+        );
+      } else if (error.contains('no registrado')) {
+        _mostrarAlerta(
+          'Error',
+          'La matrícula no fue encontrada en la base de datos.',
+          AppAlertType.error,
+        );
+      } else {
+        _mostrarAlerta('Error', 'Ocurrió un problema: $e', AppAlertType.error);
+      }
+    } finally {
+      if (mounted) setState(() => _cargando = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24.0),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Registro de Asistencia',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              widget.rol == 'admin'
+                  ? 'Selecciona la sesión y escanea/escribe la matrícula del participante.'
+                  : 'Selecciona la sesión a la que vas a ingresar.',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 15),
+            ),
+            const SizedBox(height: 32),
+
+            const Text(
+              'Sesión',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<int>(
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.event_seat_rounded),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              hint: const Text('Seleccionar sesión...'),
+              value: _idSesionSeleccionada,
+              items: _sesionesDisponibles.map((sesion) {
+                return DropdownMenuItem<int>(
+                  value: sesion['id_sesion'] as int,
+                  child: Text('${sesion['clase']} (${sesion['hora']})'),
+                );
+              }).toList(),
+              onChanged: (val) => setState(() => _idSesionSeleccionada = val),
+            ),
+            const SizedBox(height: 24),
+
+            const Text(
+              'Identificador / Matrícula',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _idController,
+              readOnly: widget.rol == 'participante',
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.badge_rounded),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                filled: true,
+                fillColor: widget.rol == 'participante'
+                    ? Colors.grey.shade200
+                    : Colors.white,
+                hintText: 'Ej. 2023X001',
+              ),
+              validator: (val) => val == null || val.isEmpty
+                  ? 'Ingresa el identificador'
+                  : null,
+            ),
+            const SizedBox(height: 40),
+
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade700,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                ),
+                onPressed: _cargando ? null : _registrarAsistencia,
+                icon: _cargando
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Icon(Icons.check_circle_outline_rounded),
+                label: Text(
+                  _cargando ? 'Procesando...' : 'Confirmar Asistencia',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
